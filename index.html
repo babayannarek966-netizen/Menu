@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Specialty Menu</title>
+    <style>
+        :root {
+            --bg-color: #faf8f5;
+            --card-bg: #ffffff;
+            --text-main: #2b2321;
+            --text-muted: #7a6e6b;
+            --accent: #805733;
+            --accent-light: #f2eae4;
+            --border-color: #ede9e6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 15px 10px;
+            line-height: 1.4;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-top: 10px;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            text-transform: uppercase;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        /* Fixed Navigation Bar for Phones */
+        .filter-nav {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 25px;
+            position: sticky;
+            top: 0;
+            background-color: var(--bg-color);
+            padding: 10px 0;
+            z-index: 100;
+            width: 100%;
+        }
+
+        .filter-btn {
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 8px 14px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            white-space: nowrap;
+        }
+
+        .filter-btn.active {
+            background-color: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        /* Mobile-First Layout Core Structure */
+        .menu-container {
+            display: flex;
+            flex-direction: column; 
+            gap: 25px;
+            max-width: 500px; 
+            margin: 0 auto;
+        }
+
+        .menu-column {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(128, 87, 51, 0.04);
+            border: 1px solid var(--border-color);
+            width: 100%;
+        }
+
+        .menu-column.hidden {
+            display: none;
+        }
+
+        .column-title {
+            font-size: 1.35rem;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Clickable Row Styling */
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px dashed var(--border-color);
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Image Box Container */
+        .item-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            background-color: var(--accent-light);
+            margin-right: 12px;
+            object-fit: cover;
+            flex-shrink: 0;
+            display: block;
+        }
+
+        /* Hides images that haven't been added yet so they don't look broken */
+        .item-img[src=""] {
+            visibility: hidden;
+            width: 15px; /* Keeps a tiny space until filled */
+            background-color: transparent;
+        }
+
+        .item-text-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        .item-details {
+            padding-right: 10px;
+        }
+
+        .item-name {
+            font-weight: 600;
+            font-size: 0.98rem;
+            color: var(--text-main);
+        }
+
+        .item-description {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .item-price {
+            font-weight: 700;
+            color: var(--accent);
+            white-space: nowrap;
+            font-size: 0.98rem;
+        }
+
+        /* Full-Screen Phone Image Pop-up Window */
+        .image-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .image-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .overlay-card {
+            background-color: var(--card-bg);
+            padding: 15px;
+            border-radius: 20px;
+            width: 85%;
+            max-width: 360px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            transform: scale(0.9);
+            transition: transform 0.25s ease;
+        }
+
+        .image-overlay.active .overlay-card {
+            transform: scale(1);
+        }
+
+        .overlay-img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border-radius: 12px;
+            background-color: var(--accent-light);
+        }
+
+        .overlay-title {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-top: 12px;
+            color: var(--text-main);
+        }
+
+        .overlay-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Our Menu</h1>
+        <p>Crafted & Prepared Fresh Daily</p>
+    </header>
+
+    <div class="filter-nav">
+        <button class="filter-btn active" onclick="filterMenu('all')">Show All</button>
+        <button class="filter-btn" onclick="filterMenu('cold')">Cold Coffees</button>
+        <button class="filter-btn" onclick="filterMenu('hot')">Hot Coffees</button>
+        <button class="filter-btn" onclick="filterMenu('iced-drinks')">Iced Drinks</button>
+    </div>
+
+    <div class="menu-container">
+
+        <!-- COLUMN 1: COLD COFFEES -->
+        <div class="menu-column" id="cold-column">
+            <h2 class="column-title">Cold Coffees</h2>
+            
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="photos/FreddoEspresso.jpg" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Freddo Espresso / Cappuccino</div>
+                        <div class="item-description">Chilled, standard Italian espresso style, whipped over ice cubes.</div>
+                    </div>
+                    <div class="item-price">1000 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="photos/IcedAmericano.jpg" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Iced Americano</div>
+                        <div class="item-description">Classic bold espresso poured directly over cold water and ice.</div>
+                    </div>
+                    <div class="item-price">700 ֏</div>
+                </div>
+            </div>
+
+            <!-- CAPPUCCINO PHOTO FIXED HERE -->
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="photos/Cappuccino.jpg" class="item-img" alt="Iced Cappuccino">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Iced Cappuccino</div>
+                        <div class="item-description">Cold espresso paired with chilled milk and structured cold foam.</div>
+                    </div>
+                    <div class="item-price">900 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="photos/Iced Latte.jpg" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Iced Latte</div>
+                        <div class="item-description">Smooth espresso topped up with chilled, velvety textured milk.</div>
+                    </div>
+                    <div class="item-price">900 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Iced Flat White</div>
+                        <div class="item-description">A stronger double shot balance matched with cold milk over ice.</div>
+                    </div>
+                    <div class="item-price">1000 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Iced Spanish Latte</div>
+                        <div class="item-description">Chilled signature latte sweet-layered with rich condensed milk.</div>
+                    </div>
+                    <div class="item-price">1000 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Iced White Mocha Coffee</div>
+                        <div class="item-description">Espresso mixed with premium white chocolate sauce, milk, and ice.</div>
+                    </div>
+                    <div class="item-price">550 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Iced Classic Raf Coffee</div>
+                        <div class="item-description">Rich cream and milk blend infused with aromatic natural vanilla extract.</div>
+                    </div>
+                    <div class="item-price">900 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Iced Pistachio Raf</div>
+                        <div class="item-description">Indulgent heavy cream coffee blended with gourmet green pistachio.</div>
+                    </div>
+                    <div class="item-price">1000 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Iced Strawberry Raf</div>
+                        <div class="item-description">Cream-whipped espresso coffee featuring real wild strawberry syrup base.</div>
+                    </div>
+                    <div class="item-price">900 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Iced Nutella Coffee</div>
+                        <div class="item-description">Our signature iced mocha base featuring melted hazelnut Nutella spread.</div>
+                    </div>
+                    <div class="item-price">600 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Iced Kinder Coffee</div>
+                        <div class="item-description">Chilled espresso base fully mixed with classic melted Kinder chocolate.</div>
+                    </div>
+                    <div class="item-price">600 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Iced Kinder White Cream</div>
+                        <div class="item-description">Iced espresso enriched with smooth Kinder white chocolate sauce.</div>
+                    </div>
+                    <div class="item-price">1000 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Iced Bounty Coffee</div>
+                        <div class="item-description">Chilled coffee base infused with island-style sweet coconut elements.</div>
+                    </div>
+                    <div class="item-price">600 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Iced Biscoffee</div>
+                        <div class="item-description">Espresso over ice mixed with original Biscoff cookie paste cream.</div>
+                    </div>
+                    <div class="item-price">1200 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Iced Peanutter Coffee</div>
+                        <div class="item-description">Chilled creamy modern drink accented with real roasted peanut butter cream.</div>
+                    </div>
+                    <div class="item-price">1000 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Iced Cookie Coffee</div>
+                        <div class="item-description">Chilled milk coffee showcasing natural chocolate chip cookie crumbs.</div>
+                    </div>
+                    <div class="item-price">600 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Iced Black Star Coffee</div>
+                        <div class="item-description">House specialty cold brew recipe dusted with ground sweet cinnamon spice.</div>
+                    </div>
+                    <div class="item-price">500 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Iced Creamy Coffee</div>
+                        <div class="item-description">Rich and full-bodied coffee mix crafted using condensed cream layers.</div>
+                    </div>
+                    <div class="item-price">550 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Iced Chocolate</div>
+                        <div class="item-description">Refreshing non-coffee iced option mixed with pure sweetened milk chocolate.</div>
+                    </div>
+                    <div class="item-price">500 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Iced Instant Coffee</div>
+                        <div class="item-description">Quick premium instant style selection served crisp over ice cubes.</div>
+                    </div>
+                    <div class="item-price">400 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Iced Nescafe</div>
+                        <div class="item-description">Classic whipped instant coffee formula mixed up into a cold base.</div>
+                    </div>
+                    <div class="item-price">450 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Iced Dolce Gusto Coffee</div>
+                        <div class="item-description">Distinct Indonesian profile cold extract presenting deep dark roast notes.</div>
+                    </div>
+                    <div class="item-price">500 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Bumble Coffee</div>
+                        <div class="item-description">Stunning double espresso floats over high-quality, cold orange juice juice.</div>
+                    </div>
+                    <div class="item-price">900 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Bumble Cherry</div>
+                        <div class="item-description">Layered espresso creation featuring sweet, dark sour cherry nectar juice.</div>
+                    </div>
+                    <div class="item-price">900 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Espresso Tonic</div>
+                        <div class="item-description">Bold espresso shot top-poured over bubbling, bitter premium tonic water.</div>
+                    </div>
+                    <div class="item-price">900 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Espresso Grapefruit Tonic</div>
+                        <div class="item-description">Bitter tonic and espresso combined with freshly pressed ruby grapefruit.</div>
+                    </div>
+                    <div class="item-price">900 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Coffee Glace</div>
+                        <div class="item-description">Deep cold brew style coffee complete with a scoop of real vanilla ice cream.</div>
+                    </div>
+                    <div class="item-price">800 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Dolce Glace</div>
+                        <div class="item-description">A lighter, gentler iced style drink capped with fresh ice cream.</div>
+                    </div>
+                    <div class="item-price">800 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">White Mocha Glace</div>
+                        <div class="item-description">White sweet mocha coffee served with a floating scoop of vanilla cream.</div>
+                    </div>
+                    <div class="item-price">800 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Espresso Glace</div>
+                        <div class="item-description">Two hot espresso extractions poured directly on top of frozen ice cream.</div>
+                    </div>
+                    <div class="item-price">1000 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Fantasy Coffee</div>
+                        <div class="item-description">A creative custom mix made of luxury milk and chopped Kinder bars.</div>
+                    </div>
+                    <div class="item-price">700 ֏</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMN 2: HOT COFFEES -->
+        <div class="menu-column" id="hot-column">
+            <h2 class="column-title">Hot Coffees</h2>
+            
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Espresso</div>
+                        <div class="item-description">Concentrated, standard single shot showcasing a thick golden crema layer.</div>
+                    </div>
+                    <div class="item-price">500 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Americano</div>
+                        <div class="item-description">Rich espresso shot softened down evenly with filtered boiling water.</div>
+                    </div>
+                    <div class="item-price">600 ֏</div>
+                </div>
+            </div>
+
+            <!-- CAPPUCCINO PHOTO FIXED HERE -->
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="photos/Cappuccino.jpg" class="item-img" alt="Cappuccino">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Cappuccino</div>
+                        <div class="item-description">Equal mix of deep espresso, hot steamed dairy, and dense microfoam.</div>
+                    </div>
+                    <div class="item-price">800 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Latte</div>
+                        <div class="item-description">Light and highly milky espresso preparation with a silky thin foam layer.</div>
+                    </div>
+                    <div class="item-price">800 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Flat White</div>
+                        <div class="item-description">A strong double ristretto base folded directly into smooth steamed milk.</div>
+                    </div>
+                    <div class="item-price">900 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Spanish Latte</div>
+                        <div class="item-description">A sweeter traditional latte made using premium sweet condensed milk base.</div>
+                    </div>
+                    <div class="item-price">950 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">White Mocha Coffee</div>
+                        <div class="item-description">Warm espresso infused with premium white chocolate sauce and hot milk.</div>
+                    </div>
+                    <div class="item-price">550 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Classic Raf Coffee</div>
+                        <div class="item-description">Espresso shot directly steam-blended with liquid heavy cream and sweet vanilla.</div>
+                    </div>
+                    <div class="item-price">850 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Pistachio Raf</div>
+                        <div class="item-description">Creamy dessert-like coffee containing smooth green pistachio paste essence.</div>
+                    </div>
+                    <div class="item-price">950 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Strawberry Raf</div>
+                        <div class="item-description">Luxurious steamed cream coffee completed with premium wild strawberry extract.</div>
+                    </div>
+                    <div class="item-price">850 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Nutella Coffee</div>
+                        <div class="item-description">Hot latte featuring a rich swirl of chocolate hazelnut Nutella spread.</div>
+                    </div>
+                    <div class="item-price">600 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Kinder Coffee</div>
+                        <div class="item-description">Hot milk coffee crafted with melting bars of traditional Kinder chocolate.</div>
+                    </div>
+                    <div class="item-price">600 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Kinder White Cream</div>
+                        <div class="item-description">Fresh espresso paired with smooth melting Kinder white chocolate elements.</div>
+                    </div>
+                    <div class="item-price">950 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Bounty Coffee</div>
+                        <div class="item-description">Espresso mixed with premium sweet coconut milk and white mocha flavors.</div>
+                    </div>
+                    <div class="item-price">600 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Biscoffee</div>
+                        <div class="item-description">Espresso latte with deep melted Lotus cookie butter spread and foam.</div>
+                    </div>
+                    <div class="item-price">1100 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Peanutter Coffee</div>
+                        <div class="item-description">Velvety coffee option showcasing natural savory-sweet peanut cream.</div>
+                    </div>
+                    <div class="item-price">950 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Cookie Coffee</div>
+                        <div class="item-description">Steamed mocha style base featuring real melted chocolate biscuit essence.</div>
+                    </div>
+                    <div class="item-price">600 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Black Star Coffee</div>
+                        <div class="item-description">Our signature spiced recipe using freshly grated Ceylon cinnamon sticks.</div>
+                    </div>
+                    <div class="item-price">500 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Creamy Coffee</div>
+                        <div class="item-description">A rich espresso preparation featuring specialized thicker dairy blends.</div>
+                    </div>
+                    <div class="item-price">550 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Hot Chocolate</div>
+                        <div class="item-description">Comforting non-coffee choice featuring premium instant Dutch cocoa powders.</div>
+                    </div>
+                    <div class="item-price">500 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Instant Coffee</div>
+                        <div class="item-description">Quick comforting 3-in-1 coffee recipe prepared with boiling water.</div>
+                    </div>
+                    <div class="item-price">400 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Nescafe</div>
+                        <div class="item-description">Standard classic strong instant formula served hot in a mug.</div>
+                    </div>
+                    <div class="item-price">450 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Dolce Gusto Coffee</div>
+                        <div class="item-description">Premium coffee selection prepared using specialized dark roast beans.</div>
+                    </div>
+                    <div class="item-price">500 ֏</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMN 3: ICED DRINKS -->
+        <div class="menu-column" id="iced-drinks-column">
+            <h2 class="column-title">Iced Drinks</h2>
+            
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Classic Iced Tea</div>
+                        <div class="item-description">Crisp black leaf tea base freshly shaken with ice and lemon slices.</div>
+                    </div>
+                    <div class="item-price">700 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Peach Iced Tea</div>
+                        <div class="item-description">Sweetened chilled tea infused with orchard peach fruit syrups.</div>
+                    </div>
+                    <div class="item-price">700 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Strawberry Smoothie</div>
+                        <div class="item-description">Thick blended drink featuring fully crushed real summer strawberries.</div>
+                    </div>
+                    <div class="item-price">900 ֏</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="openItem(this)">
+                <img src="" class="item-img" alt="">
+                <div class="item-text-wrapper">
+                    <div class="item-details">
+                        <div class="item-name">Wild Berry Lemonade</div>
+                        <div class="item-description">Fizzy handcrafted lemonade loaded with mixed crushed forest berries.</div>
+                    </div>
+                    <div class="item-price">850 ֏</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Hidden Full-Screen Container for Zoomed Image -->
+    <div class="image-overlay" id="imageOverlay" onclick="closeItem()">
+        <div class="overlay-card" onclick="event.stopPropagation()">
+            <img src="" alt="" class="overlay-img" id="overlayImg">
+            <div class="overlay-title" id="overlayTitle"></div>
+            <div class="overlay-desc" id="overlayDesc"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2026 Digital Menu. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        // Interactive Phone Pop-up Logic
+        function openItem(element) {
+            const imgElement = element.querySelector('.item-img');
+            // If the item doesn't have an image path loaded yet, don't open the popup
+            if (!imgElement || imgElement.getAttribute('src') === "") return;
+
+            const imgSrc = imgElement.getAttribute('src');
+            const name = element.querySelector('.item-name').innerText;
+            const desc = element.querySelector('.item-description').innerText;
+
+            document.getElementById('overlayImg').src = imgSrc;
+            document.getElementById('overlayTitle').innerText = name;
+            document.getElementById('overlayDesc').innerText = desc;
+
+            document.getElementById('imageOverlay').classList.add('active');
+        }
+
+        function closeItem() {
+            document.getElementById('imageOverlay').classList.remove('active');
+        }
+
+        // Center Filtering Logic Script
+        function filterMenu(category) {
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const coldCol = document.getElementById('cold-column');
+            const hotCol = document.getElementById('hot-column');
+            const icedCol = document.getElementById('iced-drinks-column');
+
+            if (category === 'all') {
+                coldCol.classList.remove('hidden');
+                hotCol.classList.remove('hidden');
+                icedCol.classList.remove('hidden');
+            } else if (category === 'cold') {
+                coldCol.classList.remove('hidden');
+                hotCol.classList.add('hidden');
+                icedCol.classList.add('hidden');
+            } else if (category === 'hot') {
+                coldCol.classList.add('hidden');
+                hotCol.classList.remove('hidden');
+                icedCol.classList.add('hidden');
+            } else if (category === 'iced-drinks') {
+                coldCol.classList.add('hidden');
+                hotCol.classList.add('hidden');
+                icedCol.classList.remove('hidden');
+            }
+            
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+    </script>
+
+</body>
+</html>
